@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Knox.Commanding;
+using Knox.Mediation;
+using Microsoft.Extensions.DependencyInjection;
 using Sol.Domain.Commanding;
 using Sol.Domain.Commands;
 using Sol.Domain.Repositories;
@@ -10,11 +12,12 @@ namespace Sol.WPF
     {
         public static IServiceCollection InjectAll(this IServiceCollection services)
         {
-            services.AddSingleton(typeof(ISaveFile), typeof(SaveFile));
-
-            services.InjectCommands();
-
-            services.AddSingleton(typeof(IExporter), typeof(FileExporter));
+            services
+                .AddSingleton<ISaveFile, SaveFile>()
+                .InjectCommands()
+                .InjectMediator()
+                .AddSingleton<IExporter, FileExporter>()
+                ;
 
             return services;
         }
@@ -31,6 +34,21 @@ namespace Sol.WPF
             services.AddTransient(typeof(ICommand<DoNotFinishBookCommandContext>), typeof(DoNotFinishBookCommand));
             services.AddTransient(typeof(ICommand<SwapBookOrderCommandContext>), typeof(SwapBookOrderCommand));
             services.AddTransient(typeof(ICommand<ExportTbrToFileCommandContext>), typeof(ExportTbrToFileCommand));
+
+            return services;
+        }
+
+        private static IServiceCollection InjectMediator(this IServiceCollection services)
+        {
+            services
+                .AddTransient<ICommandHandler<CreateItemCommand>, CreateItemCommandHandler>();
+
+            services.AddTransient<IMediator>((provider) =>
+            {
+                var mediator = new Mediator();
+                mediator.Register(provider.GetRequiredService<ICommandHandler<CreateItemCommand>>());
+                return mediator;
+            });
 
             return services;
         }

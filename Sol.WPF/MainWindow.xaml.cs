@@ -1,4 +1,5 @@
-﻿using Sol.Domain.Commanding;
+﻿using Knox.Mediation;
+using Sol.Domain.Commanding;
 using Sol.Domain.Commands;
 using Sol.Domain.Common;
 using Sol.Domain.Common.Maybes;
@@ -21,6 +22,8 @@ namespace Sol.WPF
     {
         private ISaveFile saveFile = new SaveFile();
 
+        private readonly IMediator mediator;
+
         private readonly ICommand<SaveToFileCommandContext> saveToFileCommand;
         private readonly ICommand<LoadFromFileCommandContext, ISaveFile> loadFromFileCommand;
         private readonly ICommand<StartReadingBookCommandContext> startReadingBookCommand;
@@ -33,7 +36,7 @@ namespace Sol.WPF
 
         private Profile SelectedProfile { get; set; } = Profile.Personal;
 
-        public MainWindow(ICommand<SaveToFileCommandContext> saveToFileCommand, ICommand<LoadFromFileCommandContext, ISaveFile> loadFromFileCommand, ICommand<StartReadingBookCommandContext> startReadingBookCommand, ICommand<StopReadingBookCommandContext> stopReadingBookCommand, ICommand<FinishBookCommandContext> finishBookCommand, ICommand<CreateBookCommandContext> createBookCommand, ICommand<DoNotFinishBookCommandContext> doNotFinishBookCommand, ICommand<SwapBookOrderCommandContext> swapBookCommand, ICommand<ExportTbrToFileCommandContext> exportTbrCommand)
+        public MainWindow(ICommand<SaveToFileCommandContext> saveToFileCommand, ICommand<LoadFromFileCommandContext, ISaveFile> loadFromFileCommand, ICommand<StartReadingBookCommandContext> startReadingBookCommand, ICommand<StopReadingBookCommandContext> stopReadingBookCommand, ICommand<FinishBookCommandContext> finishBookCommand, ICommand<CreateBookCommandContext> createBookCommand, ICommand<DoNotFinishBookCommandContext> doNotFinishBookCommand, ICommand<SwapBookOrderCommandContext> swapBookCommand, ICommand<ExportTbrToFileCommandContext> exportTbrCommand, IMediator mediator)
         {
             this.saveToFileCommand = saveToFileCommand;
             this.loadFromFileCommand = loadFromFileCommand;
@@ -46,11 +49,15 @@ namespace Sol.WPF
             this.swapBookCommand = swapBookCommand;
             this.exportTbrCommand = exportTbrCommand;
 
+            this.mediator = mediator;
+
             InitializeComponent();
         }
 
-        private void MoveBookButton_Click(object sender, RoutedEventArgs e)
+        private async void MoveBookButton_Click(object sender, RoutedEventArgs e)
         {
+            await mediator.ExecuteCommandAsync(new CreateItemCommand("", HobbyType.Miscellaneous, 0));
+
             // Move from TBR to Currently Reading, vice versa.
             try
             {
