@@ -28,6 +28,7 @@ namespace Sol.WPF
                 .AddTransient<ICommandHandler<DeleteItemCommand>, DeleteItemCommandHandler>()
                 .AddTransient<ICommandHandler<BumpItemCommand>, BumpItemCommandHandler>()
                 .AddTransient<ICommandHandler<ExportNotStartedListCommand>, ExportNotStartedListCommandHandler>()
+                .AddTransient<ICommandHandler<CompleteItemCommand>, CompleteItemCommandHandler>()
                 ;
 
             return services;
@@ -45,6 +46,7 @@ namespace Sol.WPF
                     .Register(provider.GetRequiredService<ICommandHandler<DeleteItemCommand>>())
                     .Register(provider.GetRequiredService<ICommandHandler<BumpItemCommand>>())
                     .Register(provider.GetRequiredService<ICommandHandler<ExportNotStartedListCommand>>())
+                    .Register(provider.GetRequiredService<ICommandHandler<CompleteItemCommand>>())
                     ;
                 return mediator;
             });

@@ -22,10 +22,28 @@ namespace Sol.Domain.Models
         [JsonIgnore]
         public bool IsFinished => CompletionDate != DateOnly.MinValue;
 
-        public Item ChangeStatus(ItemStatus status) => this with
+        public Item ChangeStatus(ItemStatus status)
         {
-            Status = status
-        };
+            var completeDate = CompletionDate;
+            var startDate = StartedDate;
+
+            if (status == ItemStatus.Complete)
+            {
+                completeDate = DateTime.Now.ToDateOnly();
+            }
+
+            if (status == ItemStatus.InProgress)
+            {
+                startDate = DateTime.Now.ToDateOnly();
+            }
+
+            return this with
+            {
+                Status = status,
+                StartedDate = startDate,
+                CompletionDate = completeDate,
+            };
+        }
 
         /// <summary>
         /// Automatically updates the index as the last item in the list as it's current status.
@@ -48,7 +66,7 @@ namespace Sol.Domain.Models
             }
             else
             {
-                result += $"\n\t{StartedDate} - {CompletionDate} ({((StartedDate.ToDateTime(new()) - StartedDate.ToDateTime(new())).TotalDays) + 1} days)";
+                result += $"\n\t{StartedDate} - {CompletionDate} ({(CompletionDate.ToDateTime(new()) - StartedDate.ToDateTime(new())).TotalDays + 1} days)";
             }
 
             return result;

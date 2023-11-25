@@ -131,7 +131,7 @@ namespace Sol.WPF
 
             try
             {
-                await mediator.ExecuteCommandAsync(new ChangeItemStatusCommand(saveFile, itemGift.UnwrapOrTantrum()!, ItemStatus.Complete));
+                await mediator.ExecuteCommandAsync(new CompleteItemCommand(saveFile, itemGift.UnwrapOrTantrum()!));
                 ReloadListBoxes();
             }
             catch (EmptyGiftException)
