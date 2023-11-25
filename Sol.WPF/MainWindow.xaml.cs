@@ -1,6 +1,7 @@
 ﻿using Knox.Exceptions;
 using Knox.Extensions;
 using Knox.Mediation;
+using Knox.Monads;
 using Sol.Domain.Commands;
 using Sol.Domain.Common;
 using Sol.Domain.Models;
@@ -40,12 +41,12 @@ namespace Sol.WPF
         private async void MoveItemButton_Click(object sender, RoutedEventArgs e)
         {
             // Move from Not Started to In Progress and vice versa.
-            var itemGift = (NotStartedListBox.SelectedItem as Item).Wrap();
+            var itemGift = GetSelectedItemWrapped(NotStartedListBox);
             var newStatus = ItemStatus.InProgress;
 
             if (itemGift.IsEmpty)
             {
-                itemGift = (InProgressListBox.SelectedItem as Item).Wrap();
+                itemGift = GetSelectedItemWrapped(InProgressListBox);
                 newStatus = ItemStatus.NotStarted;
             }
             try
@@ -121,6 +122,8 @@ namespace Sol.WPF
             InProgressLabel.Content = selectedHobby.InProgressHeader;
 
             var complete = items.Where(item => item.Status == ItemStatus.Complete);
+            LoadListBox(CompletedListBox, complete);
+            CompletedLabel.Content = $"{selectedHobby.CompleteHeader} ({complete.Count()})";
 
             //var finished = saveFile.GetFinished();
             //LoadListBox(FinishedListBox, finished);
@@ -160,22 +163,24 @@ namespace Sol.WPF
             //MoveBookButton.Content = "Start Reading";
         }
 
-        private void FinishItemButton_Click(object sender, RoutedEventArgs e)
+        private async void CompleteItemButton_Click(object sender, RoutedEventArgs e)
         {
-            //try
-            //{
-            //    var book = (CurrentlyReadingListBox.SelectedItem as Book).ToMaybe().GetOrThrow()!;
-            //    finishBookCommand.Execute(new(book, saveFile));
-            //    ReloadListBoxes();
-            //}
-            //catch (EmptyMaybeException)
-            //{
-            //    MessageBox.Show("Select a book you're currently reading to finish it.", "Failed to finish book");
-            //}
-            //catch (Exception ex)
-            //{
-            //    MessageBox.Show($"An error occurred performing this action: {ex.Message}", "An error has occurred");
-            //}
+            var itemGift = GetSelectedItemWrapped(InProgressListBox);
+
+            try
+            {
+                await mediator.ExecuteCommandAsync(new ChangeItemStatusCommand(saveFile, itemGift.UnwrapOrTantrum()!, ItemStatus.Complete));
+                ReloadListBoxes();
+            }
+            catch (EmptyGiftException)
+            {
+                MessageBox.Show($"Select an item from your {selectedHobby.InProgressHeader} list to complete it.", "Failed to complete item");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"An error occurred performing this action: {ex.Message}", "An error has occurred");
+            }
+
         }
 
         private void AddItemButton_Click(object sender, RoutedEventArgs e)
@@ -197,22 +202,35 @@ namespace Sol.WPF
             //}
         }
 
-        private void DoNotFinishBookButton_Click(object sender, RoutedEventArgs e)
+        private async void DeleteItemButton_Click(object sender, RoutedEventArgs e)
         {
-            //try
-            //{
-            //    var book = (CurrentlyReadingListBox.SelectedItem as Book).ToMaybe().GetOrThrow()!;
-            //    doNotFinishBookCommand.Execute(new(book, saveFile));
-            //    ReloadListBoxes();
-            //}
-            //catch (EmptyMaybeException)
-            //{
-            //    MessageBox.Show("Select a book you're currently reading to DNF it.", "Failed to DNF book");
-            //}
-            //catch (Exception ex)
-            //{
-            //    MessageBox.Show($"An error occurred performing this action: {ex.Message}", "An error has occurred");
-            //}
+            // Find which item is selected.
+            var itemGift = GetSelectedItemWrapped(NotStartedListBox);
+
+            if (itemGift.IsEmpty)
+            {
+                itemGift = GetSelectedItemWrapped(InProgressListBox);
+
+                if (itemGift.IsEmpty)
+                {
+                    itemGift = GetSelectedItemWrapped(CompletedListBox);
+                }
+            }
+
+            try
+            {
+                await mediator.ExecuteCommandAsync(new DeleteItemCommand(saveFile, itemGift.UnwrapOrTantrum()));
+            }
+            catch (EmptyGiftException)
+            {
+                MessageBox.Show("Select an item to delete it.", "Failed to delete item");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"An error occurred performing this action: {ex.Message}", "An error has occurred");
+            }
+
+            ReloadListBoxes();
         }
 
         private void OpenSaveDirectoryButton_Click(object sender, RoutedEventArgs e)
@@ -322,6 +340,9 @@ namespace Sol.WPF
             ReloadListBoxes();
 
             AddItemButton.Content = selectedHobby.AddText;
+            CompleteItemButton.Content = selectedHobby.FinishText;
         }
+
+        private static Gift<Item> GetSelectedItemWrapped(ListBox listBox) => (listBox.SelectedItem as Item).Wrap()!;
     }
 }

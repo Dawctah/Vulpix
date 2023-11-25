@@ -31,7 +31,7 @@ namespace Sol.WPF
         {
             try
             {
-                await mediator.ExecuteCommandAsync(new CreateItemCommand(hobbyFile, ItemNameTextBox.Text, selectedHobby.Type, index));
+                await mediator.ExecuteCommandAsync(new CreateItemCommand(hobbyFile, ItemNameTextBox.Text, selectedHobby.Type));
             }
             catch (Exception ex)
             {

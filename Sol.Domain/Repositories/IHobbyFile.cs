@@ -49,6 +49,10 @@ namespace Sol.Domain.Repositories
             .ToList()
             ;
 
-        public void Delete(Item item) => items.Remove(item);
+        public void Delete(Item item)
+        {
+            items.Remove(item);
+            items = OrganizeItems();
+        }
     }
 }
