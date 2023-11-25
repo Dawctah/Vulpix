@@ -13,7 +13,7 @@ namespace Sol.Domain.Queries
                 result.Add((Activator.CreateInstance(type) as Hobby)!);
             }
 
-            return result;
+            return result.OrderBy(hobby => (int)hobby.Type);
         }
     }
 }

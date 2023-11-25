@@ -16,12 +16,12 @@
 
     public enum HobbyType
     {
-        Miscellaneous,
         Reading,
         BookClub,
-        Writing,
         Gaming,
         MoviesAndTV,
+        Writing,
         Programming,
+        Miscellaneous,
     }
 }

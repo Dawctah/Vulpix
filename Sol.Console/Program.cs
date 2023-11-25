@@ -41,7 +41,7 @@ while (running)
                         var context = new ConsoleCommandContext(input);
                         await command.ExecuteAsync(context);
 
-                        WriteSuccess($"{command.SuccessMessage}");
+                        WriteSuccess($"{command.SuccessMessage(context)}");
 
                         success = true;
                         break;

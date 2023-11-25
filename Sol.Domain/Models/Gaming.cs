@@ -12,6 +12,6 @@
         public override string PauseText => "Pause Game";
         public override string FinishText => "Beat Game";
 
-        public override string ToString() => $"Video Games";
+        public override string ToString() => $"{Type}";
     }
 }
