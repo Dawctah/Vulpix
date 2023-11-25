@@ -1,11 +1,6 @@
-﻿using Sol.Domain.Common.Maybes;
+﻿using Knox.Extensions;
 using Sol.Domain.Models;
 using Sol.Domain.Repositories;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Sol.Test.TestDoubles
 {
@@ -30,7 +25,7 @@ namespace Sol.Test.TestDoubles
         public void InsertMany(IEnumerable<T> items)
         {
             Calls++;
-            foreach(T item in items)
+            foreach (var item in items)
             {
                 SavedItems.Add(item);
             }
@@ -46,7 +41,7 @@ namespace Sol.Test.TestDoubles
         {
             Calls++;
 
-            var updating = SavedItems.Find(i => i.Key == item.Key).ToMaybe().GetOrThrow()!;
+            var updating = SavedItems.Find(i => i.Key == item.Key).Wrap().UnwrapOrTantrum()!;
             var replacementIndex = SavedItems.IndexOf(updating);
 
             SavedItems.RemoveAt(replacementIndex);
