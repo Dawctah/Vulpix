@@ -42,6 +42,8 @@ namespace Sol.WPF
                 .AddTransient<ICommandHandler<SaveHobbiesToFileCommand>, SaveHobbiesToFileCommandHandler>()
                 .AddTransient<ICommandHandler<ChangeItemStatusCommand>, ChangeItemStatusCommandHandler>()
                 .AddTransient<ICommandHandler<DeleteItemCommand>, DeleteItemCommandHandler>()
+                .AddTransient<ICommandHandler<BumpItemCommand>, BumpItemCommandHandler>()
+                .AddTransient<ICommandHandler<ExportNotStartedListCommand>, ExportNotStartedListCommandHandler>()
                 ;
 
             services.AddTransient<IMediator>((provider) =>
@@ -52,6 +54,8 @@ namespace Sol.WPF
                     .Register(provider.GetRequiredService<ICommandHandler<SaveHobbiesToFileCommand>>())
                     .Register(provider.GetRequiredService<ICommandHandler<ChangeItemStatusCommand>>())
                     .Register(provider.GetRequiredService<ICommandHandler<DeleteItemCommand>>())
+                    .Register(provider.GetRequiredService<ICommandHandler<BumpItemCommand>>())
+                    .Register(provider.GetRequiredService<ICommandHandler<ExportNotStartedListCommand>>())
                     ;
                 return mediator;
             });

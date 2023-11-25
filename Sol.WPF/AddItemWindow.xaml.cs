@@ -41,21 +41,6 @@ namespace Sol.WPF
             {
                 DialogResult = true;
             }
-
-            //try
-            //{
-            //    var title = BookTitleTextBox.Text;
-            //    var context = new CreateBookCommandContext(title, saveFile);
-            //    createBookCommand.Execute(context);
-            //}
-            //catch (Exception ex)
-            //{
-            //    MessageBox.Show($"An error occurred performing this action: {ex.Message}", "An error has occurred");
-            //}
-            //finally
-            //{
-            //    DialogResult = true;
-            //}
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
