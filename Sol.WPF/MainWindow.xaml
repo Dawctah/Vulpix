@@ -5,26 +5,26 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Sol.WPF"
         mc:Ignorable="d"
-        Title="Sol Main Menu" SizeToContent="WidthAndHeight" Loaded="Window_Loaded" Closing="Window_Closing" Height="447">
+        Title="Sol Main Menu" SizeToContent="WidthAndHeight" Loaded="Window_Loaded" Closing="Window_Closing" Height="539">
     <Grid>
-        <Button x:Name="AddBookButton" Content="Add Book" HorizontalAlignment="Left" Margin="219,48,0,0" VerticalAlignment="Top" Height="29" Width="116" Click="AddBookButton_Click"/>
-        <Button x:Name="MoveBookButton" Content="Select Book to Move" HorizontalAlignment="Left" Margin="219,82,0,0" VerticalAlignment="Top" Height="29" Width="116" Click="MoveBookButton_Click"/>
-        <Button x:Name="FinishBookButton" Content="Finish Book" HorizontalAlignment="Left" Margin="219,116,0,0" VerticalAlignment="Top" Height="29" Width="116" Click="FinishBookButton_Click"/>
+        <Button x:Name="AddItemButton" Content="Add Item" HorizontalAlignment="Left" Margin="219,48,0,0" VerticalAlignment="Top" Height="29" Width="116" Click="AddItemButton_Click"/>
+        <Button x:Name="MoveItemButton" Content="Select Item to Move" HorizontalAlignment="Left" Margin="219,82,0,0" VerticalAlignment="Top" Height="29" Width="116" Click="MoveItemButton_Click"/>
+        <Button x:Name="FinishItemButton" Content="Finish Item" HorizontalAlignment="Left" Margin="219,116,0,0" VerticalAlignment="Top" Height="29" Width="116" Click="FinishItemButton_Click"/>
         <Button x:Name="DoNotFinishBookButton" Content="Do Not Finish" HorizontalAlignment="Left" Margin="219,150,0,0" VerticalAlignment="Top" Height="29" Width="116" Click="DoNotFinishBookButton_Click" />
         <Button x:Name="BumpUpButton" Content="↑" HorizontalAlignment="Left" Margin="219,184,0,0" VerticalAlignment="Top" Height="29" Width="56" Click="BumpUpButton_Click" />
         <Button x:Name="BumpDownButton" Content="↓" HorizontalAlignment="Left" Margin="280,184,0,0" VerticalAlignment="Top" Height="29" Width="56" Click="BumpDownButton_Click" />
-        <Button x:Name="SaveFileButton" Content="Save File" HorizontalAlignment="Left" Margin="219,342,0,0" VerticalAlignment="Top" Height="29" Width="116" Click="SaveFileButton_Click"/>
-        <Button x:Name="OpenSaveDirectoryButton" HorizontalAlignment="Left" Margin="219,376,0,0" VerticalAlignment="Top" Height="48" Width="116" Click="OpenSaveDirectoryButton_Click">
+        <Button x:Name="SaveFileButton" Content="Save File" HorizontalAlignment="Left" Margin="219,431,0,0" VerticalAlignment="Top" Height="29" Width="116" Click="SaveFileButton_Click"/>
+        <Button x:Name="OpenSaveDirectoryButton" HorizontalAlignment="Left" Margin="219,465,0,0" VerticalAlignment="Top" Height="48" Width="116" Click="OpenSaveDirectoryButton_Click">
             <TextBlock TextWrapping="Wrap" TextAlignment="Center" Text="Open Save File Directory" Height="34" Width="109"/>
         </Button>
-        <ListBox x:Name="ToBeReadListBox" d:ItemsSource="{d:SampleData ItemCount=5}" Margin="10,48,0,0" GotFocus="ToBeReadListBox_GotFocus" HorizontalAlignment="Left" VerticalAlignment="Top" Height="376" Width="204"/>
-        <Label Name="ToBeReadLabel" Content="To Be Read:" HorizontalAlignment="Left" Margin="10,17,0,0" VerticalAlignment="Top" Width="213" Height="29"/>
-        <Label Content="Currently Reading:" HorizontalAlignment="Left" Margin="340,17,0,0" VerticalAlignment="Top" Width="213"/>
+        <ListBox x:Name="NotStartedListBox" d:ItemsSource="{d:SampleData ItemCount=5}" Margin="10,48,0,0" GotFocus="NotStartedListBox_GotFocus" HorizontalAlignment="Left" VerticalAlignment="Top" Height="465" Width="204"/>
+        <Label Name="NotStartedLabel" Content="Not Started:" HorizontalAlignment="Left" Margin="10,17,0,0" VerticalAlignment="Top" Width="213" Height="29"/>
+        <Label Name="InProgressLabel" Content="In Progress:" HorizontalAlignment="Left" Margin="340,17,0,0" VerticalAlignment="Top" Width="213"/>
         <Label Name="FinishedLabel" Content="Finished:" HorizontalAlignment="Left" Margin="548,20,0,0" VerticalAlignment="Top" Width="243"/>
-        <ListBox x:Name="CurrentlyReadingListBox" d:ItemsSource="{d:SampleData ItemCount=5}" Margin="340,48,0,0" GotFocus="CurrentlyReadingListBox_GotFocus" HorizontalAlignment="Left" VerticalAlignment="Top" Height="376" Width="203"/>
-        <ListBox x:Name="FinishedListBox" d:ItemsSource="{d:SampleData ItemCount=5}" Margin="548,48,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" Height="376" Width="233"/>
+        <ListBox x:Name="InProgressListBox" d:ItemsSource="{d:SampleData ItemCount=5}" Margin="340,48,0,0" GotFocus="InProgressListBox_GotFocus" HorizontalAlignment="Left" VerticalAlignment="Top" Height="465" Width="203"/>
+        <ListBox x:Name="FinishedListBox" d:ItemsSource="{d:SampleData ItemCount=5}" Margin="548,48,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" Height="465" Width="233"/>
         <Button x:Name="ExportTbrListButton" Content="Export TBR to List" HorizontalAlignment="Left" Margin="219,218,0,0" VerticalAlignment="Top" Height="29" Width="116" Click="ExportTbrListButton_Click"/>
-        <Button x:Name="ChangeProfileButton" Content="Change Profile" HorizontalAlignment="Left" Margin="218,313,0,0" VerticalAlignment="Top" Width="117" Height="24" Click="ChangeProfileButton_Click"/>
-        <ListBox x:Name="ProfilesListBox" d:ItemsSource="{d:SampleData ItemCount=5}" Margin="220,252,0,0" GotFocus="ProfilesListBox_GotFocus" HorizontalAlignment="Left" VerticalAlignment="Top" Height="56" Width="116"/>
+        <Button x:Name="ChangeProfileButton" Content="Change Hobby" HorizontalAlignment="Left" Margin="220,402,0,0" VerticalAlignment="Top" Width="116" Height="24" Click="ChangeProfileButton_Click"/>
+        <ListBox x:Name="ProfilesListBox" d:ItemsSource="{d:SampleData ItemCount=5}" Margin="220,252,0,0" GotFocus="ProfilesListBox_GotFocus" HorizontalAlignment="Left" VerticalAlignment="Top" Height="145" Width="116"/>
     </Grid>
 </Window>

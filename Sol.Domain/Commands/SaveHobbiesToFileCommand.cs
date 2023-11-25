@@ -5,7 +5,7 @@ using Sol.Domain.Utilities;
 
 namespace Sol.Domain.Commands
 {
-    public record SaveHobbiesToFileCommand(string SaveDirectory, string FileName, IHobbyFile HobbyFile) : Command();
+    public record SaveHobbiesToFileCommand(IHobbyFile HobbyFile, string SaveDirectory, string FullName) : Command;
 
     public class SaveHobbiesToFileCommandHandler : ICommandHandler<SaveHobbiesToFileCommand>
     {
@@ -20,7 +20,7 @@ namespace Sol.Domain.Commands
 
         public Task ExecuteAsync(SaveHobbiesToFileCommand command)
         {
-            exporter.Export(command.SaveDirectory, command.FileName, () => JsonConvert.SerializeObject(command.HobbyFile));
+            exporter.Export(command.SaveDirectory, command.FullName, () => JsonConvert.SerializeObject(command.HobbyFile));
 
             return Task.CompletedTask;
         }

@@ -3,7 +3,6 @@ using Knox.Mediation;
 using Microsoft.Extensions.DependencyInjection;
 using Sol.Domain.Commanding;
 using Sol.Domain.Commands;
-using Sol.Domain.Repositories;
 using Sol.Domain.Utilities;
 
 namespace Sol.WPF
@@ -13,7 +12,6 @@ namespace Sol.WPF
         public static IServiceCollection InjectAll(this IServiceCollection services)
         {
             services
-                .AddSingleton<ISaveFile, SaveFile>()
                 .InjectCommands()
                 .InjectMediator()
                 .AddSingleton<IExporter, FileExporter>()
@@ -25,7 +23,6 @@ namespace Sol.WPF
         public static IServiceCollection InjectCommands(this IServiceCollection services)
         {
             services.AddTransient(typeof(ICommand<SaveToFileCommandContext>), typeof(SaveToFileCommand));
-            services.AddTransient(typeof(ICommand<LoadFromFileCommandContext, ISaveFile>), typeof(LoadFromFileCommand));
 
             services.AddTransient(typeof(ICommand<CreateBookCommandContext>), typeof(CreateBookCommand));
             services.AddTransient(typeof(ICommand<StartReadingBookCommandContext>), typeof(StartReadingBookCommand));
@@ -41,12 +38,19 @@ namespace Sol.WPF
         private static IServiceCollection InjectMediator(this IServiceCollection services)
         {
             services
-                .AddTransient<ICommandHandler<CreateItemCommand>, CreateItemCommandHandler>();
+                .AddTransient<ICommandHandler<CreateItemCommand>, CreateItemCommandHandler>()
+                .AddTransient<ICommandHandler<SaveHobbiesToFileCommand>, SaveHobbiesToFileCommandHandler>()
+                .AddTransient<ICommandHandler<ChangeItemStatusCommand>, ChangeItemStatusCommandHandler>()
+                ;
 
             services.AddTransient<IMediator>((provider) =>
             {
                 var mediator = new Mediator();
-                mediator.Register(provider.GetRequiredService<ICommandHandler<CreateItemCommand>>());
+                mediator
+                    .Register(provider.GetRequiredService<ICommandHandler<CreateItemCommand>>())
+                    .Register(provider.GetRequiredService<ICommandHandler<SaveHobbiesToFileCommand>>())
+                    .Register(provider.GetRequiredService<ICommandHandler<ChangeItemStatusCommand>>())
+                    ;
                 return mediator;
             });
 

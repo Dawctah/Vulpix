@@ -6,8 +6,11 @@ namespace Sol.Domain.Repositories
 {
     public interface IHobbyFile
     {
+        IEnumerable<Item> GetAllItems(HobbyType hobbyType);
+
         void Update(Item item);
         void Insert(Item item);
+        void Delete(Item item);
     }
 
     public class HobbyFile : IHobbyFile
@@ -19,6 +22,8 @@ namespace Sol.Domain.Repositories
         {
             items = new();
         }
+
+        public IEnumerable<Item> GetAllItems(HobbyType type) => items.Where(item => item.HobbyType == type);
 
         public void Update(Item item)
         {
@@ -43,5 +48,7 @@ namespace Sol.Domain.Repositories
             .ThenBy(i => i.Index)
             .ToList()
             ;
+
+        public void Delete(Item item) => items.Remove(item);
     }
 }

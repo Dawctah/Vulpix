@@ -23,7 +23,7 @@ namespace Sol.Console.Commands
 
         public async Task ExecuteAsync(ConsoleCommandContext context)
         {
-            await mediator.ExecuteCommandAsync(new SaveHobbiesToFileCommand(Data.Directory, Data.ProfileName(Profile.BookClub), hobbyFile));
+            await mediator.ExecuteCommandAsync(new SaveHobbiesToFileCommand(hobbyFile, Data.Directory, Data.ProfileName(Profile.BookClub)));
         }
 
         public string SuccessMessage(ConsoleCommandContext context) => $"Successfully saved file to {Data.Directory}";

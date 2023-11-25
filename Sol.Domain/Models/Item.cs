@@ -8,6 +8,8 @@ namespace Sol.Domain.Models
         public Item() : base(Guid.NewGuid())
         { }
 
+        public static Item Empty { get; } = new Item();
+
         public string Name { get; init; } = string.Empty;
         public HobbyType HobbyType { get; init; } = HobbyType.Miscellaneous;
         public int Index { get; init; } = 0;
@@ -15,8 +17,23 @@ namespace Sol.Domain.Models
         public DateOnly StartedDate { get; init; } = DateOnly.MinValue;
         public DateOnly CompletionDate { get; init; } = DateOnly.MinValue;
 
+        public ItemStatus Status { get; init; } = ItemStatus.NotStarted;
+
         [JsonIgnore]
         public bool IsFinished => CompletionDate != DateOnly.MinValue;
+
+        public Item ChangeStatus(ItemStatus status) => this with
+        {
+            Status = status
+        };
+
+        /// <summary>
+        /// Automatically updates the index as the last item in the list as it's current status.
+        /// </summary>
+        public Item UpdateIndex(int index) => this with
+        {
+            Index = index
+        };
 
         public override string ToString()
         {
@@ -36,5 +53,12 @@ namespace Sol.Domain.Models
 
             return result;
         }
+    }
+
+    public enum ItemStatus
+    {
+        NotStarted,
+        InProgress,
+        Complete,
     }
 }

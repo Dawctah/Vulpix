@@ -1,24 +1,26 @@
-﻿using Newtonsoft.Json;
-using Sol.Domain.Commanding;
-using Sol.Domain.Common.Maybes;
+﻿using Knox.Extensions;
+using Newtonsoft.Json;
 using Sol.Domain.Repositories;
 
+/// <summary>
+/// This command loads the file, so it must return it, making it a bit of a strange command.
+/// </summary>
 namespace Sol.Domain.Commands
 {
-    public record LoadFromFileCommandContext(string SaveDirectory, string FileName) : CommandContext();
-    public class LoadFromFileCommand : ICommand<LoadFromFileCommandContext, ISaveFile>
+    public record LoadFromFileCommand(string SaveDirectory, string FullName)
     {
-        public ISaveFile Execute(LoadFromFileCommandContext context)
+        public static HobbyFile Execute(LoadFromFileCommand command)
         {
             try
             {
-                var data = File.ReadAllText($"{context.SaveDirectory}\\{context.FileName}");
-                var result = JsonConvert.DeserializeObject<SaveFile>(data).ToMaybe().GetOrElse(new())!;
+                var data = File.ReadAllText($"{command.SaveDirectory}\\{command.FullName}");
+                var result = JsonConvert.DeserializeObject<HobbyFile>(data).Wrap().UnwrapOrExchange(new())!;
+
                 return result;
             }
             catch
             {
-                return new SaveFile();
+                return new HobbyFile();
             }
         }
     }

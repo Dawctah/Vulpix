@@ -4,11 +4,9 @@ using Sol.Domain.Repositories;
 
 namespace Sol.Domain.Commands
 {
-    public record CreateItemCommand(string Name, HobbyType HobbyType, int Index) : Command;
+    public record CreateItemCommand(IHobbyFile HobbyFile, string Name, HobbyType HobbyType, int Index) : Command;
     public class CreateItemCommandHandler : ICommandHandler<CreateItemCommand>
     {
-        private readonly IHobbyFile hobbyFile;
-
         public Task<bool> CanExecuteAsync(CreateItemCommand command)
         {
             throw new NotImplementedException();
@@ -23,7 +21,7 @@ namespace Sol.Domain.Commands
                 Index = command.Index
             };
 
-            // hobbyFile.Insert(newItem);
+            command.HobbyFile.Insert(newItem);
 
             return Task.CompletedTask;
         }
