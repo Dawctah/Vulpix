@@ -44,12 +44,9 @@ namespace Sol.Console.Commands
             await saveHobbiesToFileCommand.ExecuteAsync(new(newFile, Data.Directory, Data.FullName()));
         }
 
-        public string SuccessMessage(ConsoleCommandContext context)
-        {
-            throw new NotImplementedException();
-        }
+        public string SuccessMessage(ConsoleCommandContext context) => "Successfully converted old books into new items and saved.";
 
-        private void ConvertBooks(HobbyFile hobbyFile, IEnumerable<Book> books, HobbyType hobbyType, ItemStatus itemStatus)
+        private static void ConvertBooks(HobbyFile hobbyFile, IEnumerable<Book> books, HobbyType hobbyType, ItemStatus itemStatus)
         {
             var index = 0;
             foreach (var book in books)
