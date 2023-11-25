@@ -1,7 +1,7 @@
 ﻿using Knox.ConsoleCommanding;
+using Knox.Extensions;
 using Sol.Console.Commands;
 using Sol.Domain.Commands;
-using Sol.Domain.Common.Maybes;
 using Sol.Domain.Utilities;
 
 var running = true;
@@ -19,9 +19,9 @@ while (running)
     }
 
     Write("\n] ");
-    var inputRaw = Console.ReadLine().ToMaybe().GetOrElse(string.Empty)!;
+    var inputRaw = Console.ReadLine().Wrap().UnwrapOrExchange(string.Empty)!;
     var input = inputRaw.Split(" ");
-    var first = input.First().ToMaybe().GetOrElse(string.Empty);
+    var first = input.First().Wrap().UnwrapOrExchange(string.Empty);
 
     switch (first)
     {

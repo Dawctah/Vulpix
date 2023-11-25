@@ -1,6 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using Knox.Extensions;
+using Newtonsoft.Json;
 using Sol.Domain.Commanding;
-using Sol.Domain.Common.Maybes;
 using Sol.Domain.Repositories;
 
 namespace Sol.Domain.Commands
@@ -13,7 +13,7 @@ namespace Sol.Domain.Commands
             try
             {
                 var data = File.ReadAllText($"{context.SaveDirectory}\\{context.FileName}");
-                var result = JsonConvert.DeserializeObject<SaveFile>(data).ToMaybe().GetOrElse(new())!;
+                var result = JsonConvert.DeserializeObject<SaveFile>(data).Wrap().UnwrapOrExchange(new())!;
                 return result;
             }
             catch

@@ -1,4 +1,4 @@
-﻿using Sol.Domain.Common.Maybes;
+﻿using Knox.Extensions;
 using Sol.Domain.Repositories;
 using System.Security.Principal;
 
@@ -31,7 +31,7 @@ namespace Sol.Domain.Common
         public static string FullName(Profile profile) => ProfileName(profile) + Extension;
         public static string FullName() => FileName + Extension;
 
-        public static string Directory => "C:\\Users\\" + WindowsIdentity.GetCurrent().ToMaybe().GetOrThrow().Name.ToMaybe().GetOrThrow().Split('\\')[1] + "\\AppData\\Roaming\\Sol\\";
+        public static string Directory => "C:\\Users\\" + WindowsIdentity.GetCurrent().Wrap().UnwrapOrTantrum().Name.Wrap().UnwrapOrTantrum().Split('\\')[1] + "\\AppData\\Roaming\\Sol\\";
     }
 }
 #pragma warning restore CA1416 // Validate platform compatibility

@@ -3,6 +3,7 @@ using Sol.Domain.Common;
 
 namespace Sol.Domain.Models
 {
+    [Obsolete("Book is no longer used and has been genericized into Item")]
     public record Book(Guid Key, string Title, DateOnly StartDate, DateOnly FinishDate) : AggregateRoot(Key)
     {
         public static Book Empty { get; } = new Book(Guid.Empty, string.Empty, DateOnly.MinValue, DateOnly.MinValue);
