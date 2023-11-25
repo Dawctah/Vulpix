@@ -1,9 +1,15 @@
 ﻿using Knox.ConsoleCommanding;
+using Sol.Console.Commands;
+using Sol.Domain.Commands;
 using Sol.Domain.Common.Maybes;
+using Sol.Domain.Utilities;
 
 var running = true;
 
-var commands = new List<IConsoleCommand>();
+var commands = new List<IConsoleCommand>()
+{
+    new ConvertLegacyToModernConsoleCommand(new LegacyLoadFromFileCommand(), new SaveHobbiesToFileCommandHandler(new FileExporter()))
+};
 
 while (running)
 {
