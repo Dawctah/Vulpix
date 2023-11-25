@@ -16,7 +16,7 @@
 
     public record Reading : Hobby
     {
-        public override HobbyType Type => HobbyType.Books;
+        public override HobbyType Type => HobbyType.Reading;
         public override string NotStartedHeader => "To Be Read";
         public override string InProgressHeader => "Currently Reading";
         public override string CompleteHeader => "Finished";
@@ -52,7 +52,7 @@
 
     public record Gaming : Hobby
     {
-        public override HobbyType Type => HobbyType.VideoGames;
+        public override HobbyType Type => HobbyType.Gaming;
         public override string NotStartedHeader => "Backlog";
         public override string InProgressHeader => "Currently Playing";
         public override string CompleteHeader { get; } = "Complete";
@@ -80,7 +80,7 @@
         public override string ToString() => "Movies And TV";
     }
 
-    public record Developing : Hobby
+    public record Programming : Hobby
     {
         public override HobbyType Type => HobbyType.Programming;
         public override string NotStartedHeader => "To Do";
@@ -116,10 +116,10 @@
     public enum HobbyType
     {
         Miscellaneous,
-        Books,
+        Reading,
         BookClub,
         Writing,
-        VideoGames,
+        Gaming,
         MoviesAndTV,
         Programming,
     }
