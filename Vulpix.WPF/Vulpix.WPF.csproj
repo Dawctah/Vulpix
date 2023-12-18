@@ -5,7 +5,7 @@
     <TargetFramework>net6.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
-      <ApplicationIcon>solrock.ico</ApplicationIcon>
+      <ApplicationIcon>vulpix.ico</ApplicationIcon>
       <AssemblyName>Vulpix</AssemblyName>
   </PropertyGroup>
 
