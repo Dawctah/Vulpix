@@ -1,0 +1,29 @@
+﻿<Window x:Class="Vulpix.WPF.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Vulpix.WPF"
+        mc:Ignorable="d"
+        Title="Vulpix 2.0" SizeToContent="WidthAndHeight" Loaded="Window_Loaded" Closing="Window_Closing" Height="539">
+    <Grid>
+        <Button x:Name="AddItemButton" Content="Add Item" HorizontalAlignment="Left" Margin="219,48,0,0" VerticalAlignment="Top" Height="29" Width="116" Click="AddItemButton_Click"/>
+        <Button x:Name="MoveItemButton" Content="Select Item to Move" HorizontalAlignment="Left" Margin="219,82,0,0" VerticalAlignment="Top" Height="29" Width="116" Click="MoveItemButton_Click"/>
+        <Button x:Name="CompleteItemButton" Content="Complete Item" HorizontalAlignment="Left" Margin="219,116,0,0" VerticalAlignment="Top" Height="29" Width="116" Click="CompleteItemButton_Click"/>
+        <Button x:Name="DeleteItemButton" Content="Delete" HorizontalAlignment="Left" Margin="219,150,0,0" VerticalAlignment="Top" Height="29" Width="116" Click="DeleteItemButton_Click" />
+        <Button x:Name="BumpUpButton" Content="↑" HorizontalAlignment="Left" Margin="219,184,0,0" VerticalAlignment="Top" Height="29" Width="56" Click="BumpUpButton_Click" />
+        <Button x:Name="BumpDownButton" Content="↓" HorizontalAlignment="Left" Margin="280,184,0,0" VerticalAlignment="Top" Height="29" Width="56" Click="BumpDownButton_Click" />
+        <Button x:Name="SaveFileButton" Content="Save File" HorizontalAlignment="Left" Margin="219,431,0,0" VerticalAlignment="Top" Height="29" Width="116" Click="SaveFileButton_Click"/>
+        <Button x:Name="OpenSaveDirectoryButton" HorizontalAlignment="Left" Margin="219,465,0,0" VerticalAlignment="Top" Height="48" Width="116" Click="OpenSaveDirectoryButton_Click">
+            <TextBlock TextWrapping="Wrap" TextAlignment="Center" Text="Open Save File Directory" Height="34" Width="109"/>
+        </Button>
+        <ListBox x:Name="NotStartedListBox" d:ItemsSource="{d:SampleData ItemCount=5}" Margin="10,48,0,0" GotFocus="NotStartedListBox_GotFocus" HorizontalAlignment="Left" VerticalAlignment="Top" Height="465" Width="204"/>
+        <Label Name="NotStartedLabel" Content="Not Started:" HorizontalAlignment="Left" Margin="10,17,0,0" VerticalAlignment="Top" Width="213" Height="29"/>
+        <Label Name="InProgressLabel" Content="In Progress:" HorizontalAlignment="Left" Margin="340,17,0,0" VerticalAlignment="Top" Width="213"/>
+        <Label Name="CompletedLabel" Content="Completed:" HorizontalAlignment="Left" Margin="548,20,0,0" VerticalAlignment="Top" Width="243"/>
+        <ListBox x:Name="InProgressListBox" d:ItemsSource="{d:SampleData ItemCount=5}" Margin="340,48,0,0" GotFocus="InProgressListBox_GotFocus" HorizontalAlignment="Left" VerticalAlignment="Top" Height="465" Width="203"/>
+        <ListBox x:Name="CompletedListBox" d:ItemsSource="{d:SampleData ItemCount=5}" Margin="548,48,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" Height="465" Width="233"/>
+        <Button x:Name="ExportNotStartedButton" Content="Export Not Started" HorizontalAlignment="Left" Margin="219,218,0,0" VerticalAlignment="Top" Height="29" Width="116" Click="ExportNotStartedButton_Click"/>
+        <ListBox x:Name="HobbiesListBox" d:ItemsSource="{d:SampleData ItemCount=5}" Margin="220,252,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" Height="174" Width="116" MouseDoubleClick="HobbiesListBox_MouseDoubleClick"/>
+    </Grid>
+</Window>

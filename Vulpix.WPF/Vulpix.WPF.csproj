@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+      <ApplicationIcon>solrock.ico</ApplicationIcon>
+      <AssemblyName>Vulpix</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Knox" Version="1.0.9" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Vulpix.Domain\Vulpix.Domain.csproj" />
+    <ProjectReference Include="..\Vulpix.Domain\Vulpix.Domain.csproj" />
+  </ItemGroup>
+
+</Project>
