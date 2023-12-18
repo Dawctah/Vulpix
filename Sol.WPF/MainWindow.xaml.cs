@@ -1,14 +1,18 @@
-﻿using Sol.Domain.Commanding;
+﻿using Knox.Exceptions;
+using Knox.Extensions;
+using Knox.Mediation;
+using Knox.Monads;
 using Sol.Domain.Commands;
 using Sol.Domain.Common;
-using Sol.Domain.Common.Maybes;
 using Sol.Domain.Models;
+using Sol.Domain.Queries;
 using Sol.Domain.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -19,58 +23,42 @@ namespace Sol.WPF
     /// </summary>
     public partial class MainWindow : Window
     {
-        private ISaveFile saveFile = new SaveFile();
+        private readonly IMediator mediator;
+        private readonly IEnumerable<Hobby> allHobbies;
+        private IHobbyFile saveFile;
 
-        private readonly ICommand<SaveToFileCommandContext> saveToFileCommand;
-        private readonly ICommand<LoadFromFileCommandContext, ISaveFile> loadFromFileCommand;
-        private readonly ICommand<StartReadingBookCommandContext> startReadingBookCommand;
-        private readonly ICommand<StopReadingBookCommandContext> stopReadingBookCommand;
-        private readonly ICommand<FinishBookCommandContext> finishBookCommand;
-        private readonly ICommand<CreateBookCommandContext> createBookCommand;
-        private readonly ICommand<DoNotFinishBookCommandContext> doNotFinishBookCommand;
-        private readonly ICommand<SwapBookOrderCommandContext> swapBookCommand;
-        private readonly ICommand<ExportTbrToFileCommandContext> exportTbrCommand;
+        private Hobby selectedHobby;
 
-        private Profile SelectedProfile { get; set; } = Profile.Personal;
-
-        public MainWindow(ICommand<SaveToFileCommandContext> saveToFileCommand, ICommand<LoadFromFileCommandContext, ISaveFile> loadFromFileCommand, ICommand<StartReadingBookCommandContext> startReadingBookCommand, ICommand<StopReadingBookCommandContext> stopReadingBookCommand, ICommand<FinishBookCommandContext> finishBookCommand, ICommand<CreateBookCommandContext> createBookCommand, ICommand<DoNotFinishBookCommandContext> doNotFinishBookCommand, ICommand<SwapBookOrderCommandContext> swapBookCommand, ICommand<ExportTbrToFileCommandContext> exportTbrCommand)
+        public MainWindow(IMediator mediator)
         {
-            this.saveToFileCommand = saveToFileCommand;
-            this.loadFromFileCommand = loadFromFileCommand;
-
-            this.startReadingBookCommand = startReadingBookCommand;
-            this.stopReadingBookCommand = stopReadingBookCommand;
-            this.finishBookCommand = finishBookCommand;
-            this.createBookCommand = createBookCommand;
-            this.doNotFinishBookCommand = doNotFinishBookCommand;
-            this.swapBookCommand = swapBookCommand;
-            this.exportTbrCommand = exportTbrCommand;
+            this.mediator = mediator;
+            selectedHobby = new Reading();
+            allHobbies = GetAllHobbiesQuery.GetHobbies();
+            saveFile = new HobbyFile();
 
             InitializeComponent();
         }
 
-        private void MoveBookButton_Click(object sender, RoutedEventArgs e)
+        private async void MoveItemButton_Click(object sender, RoutedEventArgs e)
         {
-            // Move from TBR to Currently Reading, vice versa.
+            // Move from Not Started to In Progress and vice versa.
+            var itemGift = GetSelectedItemWrapped(NotStartedListBox);
+            var newStatus = ItemStatus.InProgress;
+
+            if (itemGift.IsEmpty)
+            {
+                itemGift = GetSelectedItemWrapped(InProgressListBox);
+                newStatus = ItemStatus.NotStarted;
+            }
             try
             {
-                var book = (ToBeReadListBox.SelectedItem as Book).ToMaybe().GetOrElse(Book.Empty)!;
-
-                if (book == Book.Empty)
-                {
-                    book = (CurrentlyReadingListBox.SelectedItem as Book).ToMaybe().GetOrThrow()!;
-                    stopReadingBookCommand.Execute(new(book, saveFile));
-                }
-                else
-                {
-                    startReadingBookCommand.Execute(new(book, saveFile));
-                }
+                await mediator.ExecuteCommandAsync(new ChangeItemStatusCommand(saveFile, itemGift.UnwrapOrTantrum()!, newStatus));
 
                 ReloadListBoxes();
             }
-            catch (EmptyMaybeException)
+            catch (EmptyGiftException)
             {
-                MessageBox.Show("Select a book from your TBR or Currently Reading list to move it.", "Failure to move book");
+                MessageBox.Show($"Select an item from your {selectedHobby.NotStartedHeader} or {selectedHobby.InProgressHeader} list to move it.", "Failure to move item");
             }
             catch (Exception ex)
             {
@@ -81,28 +69,34 @@ namespace Sol.WPF
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             // Load from file.
-            saveFile = loadFromFileCommand.Execute(new(Data.Directory, Data.FullName(SelectedProfile)));
-            ProfilesListBox.ItemsSource = Enum.GetValues<Profile>();
-            ReloadListBoxes();
+            saveFile = LoadFromFileCommand.Execute(new(Data.Directory, Data.FullName()));
+            HobbiesListBox.ItemsSource = allHobbies;
+
+            SetHobbyAndReload(Enum.Parse<HobbyType>(saveFile.LastSelectedHobbyTypeString));
         }
 
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        private async void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            saveToFileCommand.Execute(new(Data.Directory, Data.FullName(SelectedProfile), saveFile));
+            await mediator.ExecuteCommandAsync(new SaveHobbiesToFileCommand(saveFile, Data.Directory, Data.FullName()));
         }
 
         private void ReloadListBoxes()
         {
-            MoveBookButton.Content = "Select Book To Move";
+            var items = saveFile.GetAllItems(selectedHobby.Type);
 
-            var tbr = saveFile.GetToBeRead();
-            var finished = saveFile.GetFinished();
-            LoadListBox(ToBeReadListBox, tbr);
-            LoadListBox(CurrentlyReadingListBox, saveFile.GetCurrentlyReading());
-            LoadListBox(FinishedListBox, finished);
+            MoveItemButton.Content = "Select Item to Move";
 
-            ToBeReadLabel.Content = $"To Be Read ({tbr.Count()}):";
-            FinishedLabel.Content = $"Finished ({finished.Count()}):";
+            var notStarted = items.Where(item => item.Status == ItemStatus.NotStarted);
+            LoadListBox(NotStartedListBox, notStarted);
+            NotStartedLabel.Content = $"{selectedHobby.NotStartedHeader} ({notStarted.Count()})";
+
+            var inProgress = items.Where(item => item.Status == ItemStatus.InProgress);
+            LoadListBox(InProgressListBox, inProgress);
+            InProgressLabel.Content = selectedHobby.InProgressHeader;
+
+            var complete = items.Where(item => item.Status == ItemStatus.Complete);
+            LoadListBox(CompletedListBox, complete);
+            CompletedLabel.Content = $"{selectedHobby.CompleteHeader} ({complete.Count()})";
         }
 
         private static void LoadListBox<T>(ListBox listBox, IEnumerable<T> source)
@@ -114,68 +108,83 @@ namespace Sol.WPF
             }
         }
 
-        private void SaveFileButton_Click(object sender, RoutedEventArgs e)
+        private async void SaveFileButton_Click(object sender, RoutedEventArgs e)
         {
-            saveToFileCommand.Execute(new(Data.Directory, Data.FullName(SelectedProfile), saveFile));
+            await mediator.ExecuteCommandAsync(new SaveHobbiesToFileCommand(saveFile, Data.Directory, Data.FullName()));
         }
 
-        private void CurrentlyReadingListBox_GotFocus(object sender, RoutedEventArgs e)
+        private void InProgressListBox_GotFocus(object sender, RoutedEventArgs e)
         {
-            ToBeReadListBox.SelectedIndex = -1;
-            MoveBookButton.Content = "Pause Reading";
+            NotStartedListBox.SelectedIndex = -1;
+            MoveItemButton.Content = selectedHobby.PauseText;
         }
 
-        private void ToBeReadListBox_GotFocus(object sender, RoutedEventArgs e)
+        private void NotStartedListBox_GotFocus(object sender, RoutedEventArgs e)
         {
-            CurrentlyReadingListBox.SelectedIndex = -1;
-            MoveBookButton.Content = "Start Reading";
+            NotStartedListBox.SelectedIndex = -1;
+            MoveItemButton.Content = selectedHobby.StartText;
         }
 
-        private void FinishBookButton_Click(object sender, RoutedEventArgs e)
+        private async void CompleteItemButton_Click(object sender, RoutedEventArgs e)
         {
+            var itemGift = GetSelectedItemWrapped(InProgressListBox);
+
             try
             {
-                var book = (CurrentlyReadingListBox.SelectedItem as Book).ToMaybe().GetOrThrow()!;
-                finishBookCommand.Execute(new(book, saveFile));
+                await mediator.ExecuteCommandAsync(new CompleteItemCommand(saveFile, itemGift.UnwrapOrTantrum()!));
                 ReloadListBoxes();
             }
-            catch (EmptyMaybeException)
+            catch (EmptyGiftException)
             {
-                MessageBox.Show("Select a book you're currently reading to finish it.", "Failed to finish book");
+                MessageBox.Show($"Select an item from your {selectedHobby.InProgressHeader} list to complete it.", "Failed to complete item");
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"An error occurred performing this action: {ex.Message}", "An error has occurred");
             }
+
         }
 
-        private void AddBookButton_Click(object sender, RoutedEventArgs e)
+        private void AddItemButton_Click(object sender, RoutedEventArgs e)
         {
-            var addBookWindow = new AddBookWindow(createBookCommand, saveFile);
-            addBookWindow.ShowDialog();
+            var addItemWindow = new AddItemWindow(saveFile, mediator, selectedHobby, saveFile.GetAllItems(selectedHobby.Type).Where(item => item.Status == ItemStatus.NotStarted).Count() + 1);
+            addItemWindow.ShowDialog();
 
-            if (addBookWindow.DialogResult == true)
+            if (addItemWindow.DialogResult == true)
             {
                 ReloadListBoxes();
             }
         }
 
-        private void DoNotFinishBookButton_Click(object sender, RoutedEventArgs e)
+        private async void DeleteItemButton_Click(object sender, RoutedEventArgs e)
         {
+            // Find which item is selected.
+            var itemGift = GetSelectedItemWrapped(NotStartedListBox);
+
+            if (itemGift.IsEmpty)
+            {
+                itemGift = GetSelectedItemWrapped(InProgressListBox);
+
+                if (itemGift.IsEmpty)
+                {
+                    itemGift = GetSelectedItemWrapped(CompletedListBox);
+                }
+            }
+
             try
             {
-                var book = (CurrentlyReadingListBox.SelectedItem as Book).ToMaybe().GetOrThrow()!;
-                doNotFinishBookCommand.Execute(new(book, saveFile));
-                ReloadListBoxes();
+                await mediator.ExecuteCommandAsync(new DeleteItemCommand(saveFile, itemGift.UnwrapOrTantrum()));
             }
-            catch (EmptyMaybeException)
+            catch (EmptyGiftException)
             {
-                MessageBox.Show("Select a book you're currently reading to DNF it.", "Failed to DNF book");
+                MessageBox.Show("Select an item to delete it.", "Failed to delete item");
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"An error occurred performing this action: {ex.Message}", "An error has occurred");
             }
+
+            ReloadListBoxes();
         }
 
         private void OpenSaveDirectoryButton_Click(object sender, RoutedEventArgs e)
@@ -187,30 +196,44 @@ namespace Sol.WPF
             Process.Start(t, Data.Directory);
         }
 
-        private void BumpUpButton_Click(object sender, RoutedEventArgs e)
+        private async void BumpUpButton_Click(object sender, RoutedEventArgs e)
         {
+            await BumpInDirection(-1, 1);
+        }
+
+        private async void BumpDownButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Get max number of items.
+            var number = saveFile.GetAllItems(selectedHobby.Type).Where(item => item.Status == ItemStatus.NotStarted).Count();
+
+            await BumpInDirection(1, number);
+        }
+
+        private async Task BumpInDirection(int direction, int invalidIndex)
+        {
+            var itemGift = GetSelectedItemWrapped(NotStartedListBox);
+
             try
             {
-                var book1 = (ToBeReadListBox.SelectedItem as Book).ToMaybe().GetOrThrow()!;
-                var index = ToBeReadListBox.Items.IndexOf(ToBeReadListBox.SelectedItem as Book);
+                var item = itemGift.UnwrapOrTantrum();
 
-                if (index == 0)
+                if (item.Index == invalidIndex)
                 {
-                    throw new Exception("Top book cannot be bumped higher.");
+                    throw new Exception("Book cannot be bumped in chosen direction.");
                 }
 
-                var book2 = (ToBeReadListBox.Items[index - 1] as Book).ToMaybe().GetOrThrow("In order to bump a book up, you must first select which book to bump.")!;
-                var context = new SwapBookOrderCommandContext(book1, book2, saveFile);
+                // Check direction, -1 for array starting at 0.
+                var nextIndex = item.Index + direction - 1;
+                await mediator.ExecuteCommandAsync(new BumpItemCommand(saveFile, item, direction));
 
-                swapBookCommand.Execute(context);
                 ReloadListBoxes();
 
-                ToBeReadListBox.SelectedIndex = index - 1;
-                ToBeReadListBox.Focus();
+                NotStartedListBox.Focus();
+                NotStartedListBox.SelectedIndex = nextIndex;
             }
-            catch (EmptyMaybeException ex)
+            catch (EmptyGiftException)
             {
-                MessageBox.Show(ex.Message, "An error has occurred");
+                MessageBox.Show("Item to bump was not selected.", "An error has occurred");
             }
             catch (Exception ex)
             {
@@ -218,62 +241,35 @@ namespace Sol.WPF
             }
         }
 
-        private void BumpDownButton_Click(object sender, RoutedEventArgs e)
+        private async void ExportNotStartedButton_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                var book1 = (ToBeReadListBox.SelectedItem as Book).ToMaybe().GetOrThrow()!;
-                var index = ToBeReadListBox.Items.IndexOf(ToBeReadListBox.SelectedItem as Book);
+            var items = saveFile
+                .GetAllItems(selectedHobby.Type)
+                .Where(item => item.Status == ItemStatus.NotStarted)
+                .Select(item => item.Name)
+                ;
 
-                if (index == ToBeReadListBox.Items.Count - 1)
-                {
-                    throw new Exception("Last book cannot be bumped lower.");
-                }
+            await mediator.ExecuteCommandAsync(new ExportNotStartedListCommand(Data.Directory, $"notstarted-{selectedHobby.Type}.txt", items));
 
-                var book2 = (ToBeReadListBox.Items[index + 1] as Book).ToMaybe().GetOrThrow("In order to bump a book lower, you must first select which book to bump.")!;
-                var context = new SwapBookOrderCommandContext(book1, book2, saveFile);
-
-                swapBookCommand.Execute(context);
-                ReloadListBoxes();
-
-                ToBeReadListBox.SelectedIndex = index + 1;
-                ToBeReadListBox.Focus();
-            }
-            catch (EmptyMaybeException ex)
-            {
-                MessageBox.Show(ex.Message, "An error has occurred");
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"An error occurred performing this action: {ex.Message}", "An error has occurred");
-            }
+            MessageBox.Show($"{selectedHobby.NotStartedHeader} exported as a .txt file. Open your save data directory for the resulting file.", $"{selectedHobby.NotStartedHeader} Exported");
         }
 
-        private void ExportTbrListButton_Click(object sender, RoutedEventArgs e)
+        private void SetHobbyAndReload(HobbyType hobbyType)
         {
-            var titles = new List<string>();
-            {
-                foreach (var book in saveFile.GetToBeRead())
-                {
-                    titles.Add(book.Title);
-                }
-            }
+            selectedHobby = allHobbies.ToList().Find(hobby => hobby.Type == hobbyType)!;
+            saveFile.LastSelectedHobbyTypeString = selectedHobby.Type.ToString();
+            ReloadListBoxes();
 
-            exportTbrCommand.Execute(new(Data.Directory, "tbr-list.txt", titles));
-
-            MessageBox.Show("TBR exported as a .txt file. Open your save data directory for the resulting file.", "TBR Exported");
+            AddItemButton.Content = selectedHobby.AddText;
+            CompleteItemButton.Content = selectedHobby.FinishText;
+            ExportNotStartedButton.Content = $"Export {selectedHobby.NotStartedHeader}";
         }
 
-        private void ProfilesListBox_GotFocus(object sender, RoutedEventArgs e)
-        {
-            ChangeProfileButton.IsEnabled = true;
-        }
+        private static Gift<Item> GetSelectedItemWrapped(ListBox listBox) => (listBox.SelectedItem as Item).Wrap()!;
 
-        private void ChangeProfileButton_Click(object sender, RoutedEventArgs e)
+        private void HobbiesListBox_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            SelectedProfile = Enum.Parse<Profile>(ProfilesListBox.SelectedItem.ToString()!);
-            Window_Loaded(sender, e);
-            ChangeProfileButton.IsEnabled = false;
+            SetHobbyAndReload(Enum.Parse<HobbyType>(HobbiesListBox.SelectedItem.ToString()!.Replace(" ", string.Empty)));
         }
     }
 }

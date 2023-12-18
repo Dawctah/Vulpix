@@ -1,7 +1,7 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Sol.Domain.Commanding;
+﻿using Knox.Commanding;
+using Knox.Mediation;
+using Microsoft.Extensions.DependencyInjection;
 using Sol.Domain.Commands;
-using Sol.Domain.Repositories;
 using Sol.Domain.Utilities;
 
 namespace Sol.WPF
@@ -10,27 +10,46 @@ namespace Sol.WPF
     {
         public static IServiceCollection InjectAll(this IServiceCollection services)
         {
-            services.AddSingleton(typeof(ISaveFile), typeof(SaveFile));
-
-            services.InjectCommands();
-
-            services.AddSingleton(typeof(IExporter), typeof(FileExporter));
+            services
+                .InjectCommands()
+                .InjectMediator()
+                .AddSingleton<IExporter, FileExporter>()
+                ;
 
             return services;
         }
 
         public static IServiceCollection InjectCommands(this IServiceCollection services)
         {
-            services.AddTransient(typeof(ICommand<SaveToFileCommandContext>), typeof(SaveToFileCommand));
-            services.AddTransient(typeof(ICommand<LoadFromFileCommandContext, ISaveFile>), typeof(LoadFromFileCommand));
+            services
+                .AddTransient<ICommandHandler<CreateItemCommand>, CreateItemCommandHandler>()
+                .AddTransient<ICommandHandler<SaveHobbiesToFileCommand>, SaveHobbiesToFileCommandHandler>()
+                .AddTransient<ICommandHandler<ChangeItemStatusCommand>, ChangeItemStatusCommandHandler>()
+                .AddTransient<ICommandHandler<DeleteItemCommand>, DeleteItemCommandHandler>()
+                .AddTransient<ICommandHandler<BumpItemCommand>, BumpItemCommandHandler>()
+                .AddTransient<ICommandHandler<ExportNotStartedListCommand>, ExportNotStartedListCommandHandler>()
+                .AddTransient<ICommandHandler<CompleteItemCommand>, CompleteItemCommandHandler>()
+                ;
 
-            services.AddTransient(typeof(ICommand<CreateBookCommandContext>), typeof(CreateBookCommand));
-            services.AddTransient(typeof(ICommand<StartReadingBookCommandContext>), typeof(StartReadingBookCommand));
-            services.AddTransient(typeof(ICommand<StopReadingBookCommandContext>), typeof(StopReadingBookCommand));
-            services.AddTransient(typeof(ICommand<FinishBookCommandContext>), typeof(FinishBookCommand));
-            services.AddTransient(typeof(ICommand<DoNotFinishBookCommandContext>), typeof(DoNotFinishBookCommand));
-            services.AddTransient(typeof(ICommand<SwapBookOrderCommandContext>), typeof(SwapBookOrderCommand));
-            services.AddTransient(typeof(ICommand<ExportTbrToFileCommandContext>), typeof(ExportTbrToFileCommand));
+            return services;
+        }
+
+        private static IServiceCollection InjectMediator(this IServiceCollection services)
+        {
+            services.AddTransient<IMediator>((provider) =>
+            {
+                var mediator = new Mediator();
+                mediator
+                    .Register(provider.GetRequiredService<ICommandHandler<CreateItemCommand>>())
+                    .Register(provider.GetRequiredService<ICommandHandler<SaveHobbiesToFileCommand>>())
+                    .Register(provider.GetRequiredService<ICommandHandler<ChangeItemStatusCommand>>())
+                    .Register(provider.GetRequiredService<ICommandHandler<DeleteItemCommand>>())
+                    .Register(provider.GetRequiredService<ICommandHandler<BumpItemCommand>>())
+                    .Register(provider.GetRequiredService<ICommandHandler<ExportNotStartedListCommand>>())
+                    .Register(provider.GetRequiredService<ICommandHandler<CompleteItemCommand>>())
+                    ;
+                return mediator;
+            });
 
             return services;
         }

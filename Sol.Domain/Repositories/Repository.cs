@@ -1,7 +1,6 @@
-﻿using Newtonsoft.Json;
-using Sol.Domain.Common.Maybes;
+﻿using Knox.Extensions;
+using Newtonsoft.Json;
 using Sol.Domain.Models;
-using System.Text.Json.Serialization;
 
 namespace Sol.Domain.Repositories
 {
@@ -24,7 +23,7 @@ namespace Sol.Domain.Repositories
         public void Insert(T item) => itemRepository.Add(item);
         public void InsertMany(IEnumerable<T> items)
         {
-            foreach(var item in items)
+            foreach (var item in items)
             {
                 Insert(item);
             }
@@ -35,7 +34,7 @@ namespace Sol.Domain.Repositories
         public void Remove(T item) => itemRepository.Remove(item);
         public void Update(T item)
         {
-            var updating = itemRepository.Find(i => i.Key == item.Key).ToMaybe().GetOrThrow()!;
+            var updating = itemRepository.Find(i => i.Key == item.Key).Wrap().UnwrapOrTantrum()!;
             var replacementIndex = itemRepository.IndexOf(updating);
 
             itemRepository.RemoveAt(replacementIndex);
